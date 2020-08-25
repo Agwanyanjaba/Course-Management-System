@@ -1,37 +1,30 @@
 package com.student.microservices.controller;
 
-import com.student.microservices.model.Transaction;
-import com.student.microservices.service.TransactionService;
+import com.student.microservices.model.Modules;
+import com.student.microservices.service.ModulesService;
 import com.student.microservices.utils.RestMetaData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.format.FormatterRegistry;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.validation.MessageCodesResolver;
-import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
-import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.config.annotation.*;
 
 import java.util.*;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:9000")
-@RequestMapping("/v1/transactions")
+@RequestMapping("/v1/modules")
 
 public class ModulesController {
 
     @Bean
-    public WebMvcConfigurer corsConfigurerTransactions() {
+    public WebMvcConfigurer corsConfigurerModules() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/v1/transactions").allowedOrigins("http://www.wybosoftbank.com:8080");
+                registry.addMapping("/v1/modules").allowedOrigins("http://www.wybosoftbank.com:8080");
             }
         };
     }
@@ -42,17 +35,17 @@ public class ModulesController {
     private HashMap<String, Object> response = new HashMap();
 
     @Autowired
-    private TransactionService transactionService;
+    private ModulesService modulesService;
 
 
     //POST Module API
     @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<HashMap<String, Object>> commitTransaction(@RequestBody Transaction transaction) {
+    public ResponseEntity<HashMap<String, Object>> commitTransaction(@RequestBody Modules modules) {
         Long queryStartTime = System.currentTimeMillis();
 
         try {
-            Map<String, Object> mapTransactionResponse = new HashMap<>();
-            mapTransactionResponse = transactionService.tranferFunds(transaction);
+            Map<String, Object> mapResponse = new HashMap<>();
+            mapResponse = modulesService.postModule(modules);
 
             Date date = new Date();
             RestMetaData restMetaData = new RestMetaData(System.currentTimeMillis() - queryStartTime, date, "Students response");
@@ -60,7 +53,7 @@ public class ModulesController {
             HashMap<String, Object> response = new HashMap();
             response.put("MetaData", restMetaData.toString());
             response.put("Headers", "Modules API. Get all Modules Data");
-            response.put("Data", mapTransactionResponse);
+            response.put("Data", mapResponse);
 
             //LOGGER.info(mapTransactionResponse);
 
@@ -85,15 +78,15 @@ public class ModulesController {
     //All transactions API
     @Autowired
 
-    //actual API for getting all transactions
+    //actual API for getting all modules
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<HashMap<String, Object>> fetchTransactions() {
+    public ResponseEntity<HashMap<String, Object>> fetchModules() {
 
         try {
-            List<Transaction> listTransactions = new ArrayList<>();
-            listTransactions = transactionService.getTransactions();
+            List<Modules> listTransactions = new ArrayList<>();
+            listTransactions = modulesService.getModules();
             response.put("MetaData", restMetaData.toString());
-            response.put("Headers", "Transactions API. Get all transactions Data");
+            response.put("Headers", "Modules API. Get all Modules Data");
             response.put("Data", listTransactions);
 
             return new ResponseEntity<HashMap<String, Object>>(response, HttpStatus.OK);
@@ -110,22 +103,22 @@ public class ModulesController {
         }
     }
 
-    //get all transactions based on customer id
+    //get all modules based on student id
     //API definition
-    @RequestMapping(value = "transfer", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<HashMap<String, Object>> getCustTransaction(@RequestParam String cid) {
+    @RequestMapping(value = "student", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<HashMap<String, Object>> getCustTransaction(@RequestParam String modulesID) {
         try {
             //StringUtils.isBlank()
-            List<Transaction> usertransactions = new ArrayList<>();
-            usertransactions = transactionService.getTranDetails(cid);
+            List<Modules> modulesList = new ArrayList<>();
+            modulesList = modulesService.getModuleDetails(modulesID);
             Date date = new Date();
 
             HashMap<String, Object> loginMap = new HashMap<>();
             loginMap.put("Metadata", restMetaData.toString());
             loginMap.put("Headers", "Login Data");
-            loginMap.put("Data", usertransactions);
+            loginMap.put("Data", modulesList);
 
-            System.out.println(usertransactions);
+            System.out.println(modulesList);
             return new ResponseEntity<HashMap<String, Object>>(loginMap, HttpStatus.OK);
         } catch (Exception customerException) {
             Date errorDate = new Date();
@@ -137,7 +130,7 @@ public class ModulesController {
             return new ResponseEntity<HashMap<String, Object>>(loginError, HttpStatus.INTERNAL_SERVER_ERROR);
         } finally {
             //timing goes here
-            System.out.println("Success fetching of transaction for the user");
+            System.out.println("Success fetching of data");
         }
     }
 

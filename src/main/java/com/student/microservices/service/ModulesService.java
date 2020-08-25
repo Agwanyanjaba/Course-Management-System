@@ -1,8 +1,6 @@
 package com.student.microservices.service;
 
-import com.student.microservices.model.Transaction;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.student.microservices.model.Modules;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
@@ -17,65 +15,63 @@ import java.util.Map;
 @Component
 public class ModulesService {
     @Autowired
-    private JdbcTemplate transactionJDBCTemplate;
-    private static final Logger LOGGER = LogManager.getLogger(ModulesService.class); //log service data
+    private JdbcTemplate modulesJDBCTemplate;
 
-    public Map<String, Object> tranferFunds(Transaction transaction) {
+    public Map<String, Object> postModule(Modules modules) {
         String sqlQuery = "INSERT INTO modules (cid,transaction_date,amount) values(?,?,?) ";
-        KeyHolder transactionHolder = new GeneratedKeyHolder();
-        Map<String, Object> transactionResponse = null;
+        KeyHolder modulesHolder = new GeneratedKeyHolder();
+        Map<String, Object> moduleResponse = null;
 
         try {
-            transactionJDBCTemplate.update(new PreparedStatementCreator() {
+            modulesJDBCTemplate.update(new PreparedStatementCreator() {
                 @Override
                 public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
                     PreparedStatement ps = connection.prepareStatement(sqlQuery.toString(), Statement.RETURN_GENERATED_KEYS);
 
                     //Set values passed from the API
-                    ps.setString(1, transaction.getCid());
+                    ps.setString(1, modules.getModuleID());
                     ps.setTimestamp(2, new Timestamp(new java.util.Date().getTime()));
-                    ps.setDouble(3, transaction.getAmount());
+                    ps.setString(3,modules.getCourseID());
 
                     return ps;
                 }
-            }, transactionHolder);
-            transactionResponse = transactionHolder.getKeys();
+            }, modulesHolder);
+            moduleResponse = modulesHolder.getKeys();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
-        LOGGER.info(transactionResponse);
-        return transactionResponse;
+        return moduleResponse;
     }
 
     //get all Modules
-
-    public List<Transaction> getTransactions() {
+    //moduleID,moduleName, courseID, lastUpdated
+    public List<Modules> getModules() {
         String sqlQuery = "SELECT * FROM  modules order by lastUpdated DESC";
-        return transactionJDBCTemplate.query(sqlQuery, (rs, rowNum) -> {
-            Transaction transaction = new Transaction();
-            transaction.setTransactionID(rs.getString("transactionID"));
-            transaction.setCid(rs.getString("cid"));
-            transaction.setTransaction_date(rs.getString("lastUpdated"));
-            transaction.setAmount(rs.getDouble("amount"));
+        return modulesJDBCTemplate.query(sqlQuery, (rs, rowNum) -> {
+            Modules modules = new Modules();
+            modules.setModuleID(rs.getString("moduleID"));
+            modules.setModuleName(rs.getString("moduleName"));
+            modules.setCourseID(rs.getString("courseID"));
+            modules.setLastUpdated(rs.getString("lastUpdated"));
 
-            return transaction;
+            return modules;
         });
     }
 
     //Service to get transactions  based on customer ID
     //Pass customerID
-    public List<Transaction> getTranDetails(String cid) {
-        String accountQuery = "SELECT * FROM transactions WHERE cid = ? order by transaction_date DESC";
-        return transactionJDBCTemplate.query(accountQuery, (rs, rowNum) -> {
-                    Transaction userTransaction = new Transaction();
-                    userTransaction.setTransactionID(rs.getString("transactionID"));
-                    userTransaction.setCid(rs.getString("cid"));
-                    userTransaction.setTransaction_date(rs.getString("transaction_date"));
-                    userTransaction.setAmount(rs.getDouble("amount"));
+    public List<Modules> getModuleDetails(String moduleID) {
+        String moduleQuery = "SELECT * FROM modules WHERE moduleID = ? order by lastUpdated DESC";
+        return modulesJDBCTemplate.query(moduleQuery, (rs, rowNum) -> {
+                    Modules modules = new Modules();
+                    modules.setModuleID(rs.getString("moduleID"));
+                    modules.setModuleName(rs.getString("moduleName"));
+                    modules.setCourseID(rs.getString("courseID"));
+                    modules.setLastUpdated(rs.getString("lastUpdated"));
 
-                    return userTransaction; //return list of all transaction for the user
-                }, cid
+                    return modules; //return list of all modules
+                }, moduleID
         );
     }
 }

@@ -1,7 +1,7 @@
 package com.student.microservices.controller;
 
-import com.student.microservices.model.Transaction;
-import com.student.microservices.service.TransactionService;
+import com.student.microservices.model.Courses;
+import com.student.microservices.service.CourseService;
 import com.student.microservices.utils.RestMetaData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -16,9 +16,9 @@ import java.util.*;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:9000")
-@RequestMapping("/v1/transactions")
+@RequestMapping("/v1/courses")
 
-public class TransactionsController {
+public class CourseController {
 
     //Enable cors for request from the backend UI:
     @Bean
@@ -27,8 +27,7 @@ public class TransactionsController {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/v1/transactions").allowedOrigins("http://www.wybosoftbank.com:8080");
-                //registry.addMapping("/v1/accounts").allowedOrigins("http://localhost:3001");
-                // registry.addMapping("/v1/auth").allowedOrigins("http://localhost:3001");
+
             }
         };
     }
@@ -39,17 +38,17 @@ public class TransactionsController {
     private HashMap<String, Object> response = new HashMap();
 
     @Autowired
-    private TransactionService transactionService;
-   // private static final Logger LOGGER = LogManager.getLogger(TransactionsController.class);
+    private CourseService courseService;
+ ;
 
-    //POST Transaction API
+    //POST course API
     @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<HashMap<String, Object>> commitTransaction(@RequestBody Transaction transaction) {
+    public ResponseEntity<HashMap<String, Object>> commitCourse(@RequestBody Courses courses) {
         Long queryStartTime = System.currentTimeMillis();
 
         try {
-            Map<String, Object> mapTransactionResponse = new HashMap<>();
-            mapTransactionResponse = transactionService.tranferFunds(transaction);
+            Map<String, Object> mapResponse = new HashMap<>();
+            mapResponse = courseService.transferFunds(courses);
 
             Date date = new Date();
             RestMetaData restMetaData = new RestMetaData(System.currentTimeMillis() - queryStartTime, date, "Students response");
@@ -57,9 +56,7 @@ public class TransactionsController {
             HashMap<String, Object> response = new HashMap();
             response.put("MetaData", restMetaData.toString());
             response.put("Headers", "Customers API. Get all customers Data");
-            response.put("Data", mapTransactionResponse);
-
-            //LOGGER.info(mapTransactionResponse);
+            response.put("Data", mapResponse);
 
             return new ResponseEntity<HashMap<String, Object>>(response, HttpStatus.OK);
 
@@ -82,16 +79,16 @@ public class TransactionsController {
     //All transactions API
     @Autowired
 
-    //actual API for getting all transactions
+    //Actual API for getting all courses
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<HashMap<String, Object>> fetchTransactions() {
+    public ResponseEntity<HashMap<String, Object>> fetchAllCourses() {
 
         try {
-            List<Transaction> listTransactions = new ArrayList<>();
-            listTransactions = transactionService.getTransactions();
+            List<Courses> listCourses = new ArrayList<>();
+            listCourses = courseService.getCourses();
             response.put("MetaData", restMetaData.toString());
-            response.put("Headers", "Transactions API. Get all  Data");
-            response.put("Data", listTransactions);
+            response.put("Headers", "Courses API. Get all courses Data");
+            response.put("Data", listCourses);
 
             return new ResponseEntity<HashMap<String, Object>>(response, HttpStatus.OK);
 
@@ -107,31 +104,31 @@ public class TransactionsController {
         }
     }
 
-    //get all transactions based on customer id
+    //get all courses based on course ID
     //API definition
-    @RequestMapping(value = "transfer", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<HashMap<String, Object>> getCustTransaction(@RequestParam String cid) {
+    @RequestMapping(value = "course", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<HashMap<String, Object>> getCourses(@RequestParam String courseID) {
         try {
-            //StringUtils.isBlank()
-            List<Transaction> usertransactions = new ArrayList<>();
-            usertransactions = transactionService.getTranDetails(cid);
+
+            List<Courses> usertransactions = new ArrayList<>();
+            usertransactions = courseService.getCourseDetails(courseID);
             Date date = new Date();
 
-            HashMap<String, Object> loginMap = new HashMap<>();
-            loginMap.put("Metadata", restMetaData.toString());
-            loginMap.put("Headers", "Login Data");
-            loginMap.put("Data", usertransactions);
+            HashMap<String, Object> courseMap = new HashMap<>();
+            courseMap.put("Metadata", restMetaData.toString());
+            courseMap.put("Headers", "Course Data");
+            courseMap.put("Data", usertransactions);
 
             System.out.println(usertransactions);
-            return new ResponseEntity<HashMap<String, Object>>(loginMap, HttpStatus.OK);
+            return new ResponseEntity<HashMap<String, Object>>(courseMap, HttpStatus.OK);
         } catch (Exception customerException) {
             Date errorDate = new Date();
             RestMetaData restMetaData = new RestMetaData(System.currentTimeMillis() - queryStartTime, errorDate, "Some error occured");
-            HashMap<String, Object> loginError = new HashMap<>();
-            loginError.put("MetaData", restMetaData.toString());
-            loginError.put("Data", customerException.getMessage());
+            HashMap<String, Object> courseError = new HashMap<>();
+            courseError.put("MetaData", restMetaData.toString());
+            courseError.put("Data", customerException.getMessage());
 
-            return new ResponseEntity<HashMap<String, Object>>(loginError, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<HashMap<String, Object>>(courseError, HttpStatus.INTERNAL_SERVER_ERROR);
         } finally {
             //timing goes here
             System.out.println("Success fetching of data");
