@@ -8,59 +8,76 @@ import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-
 import java.sql.*;
 import java.util.*;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 @Component
 public class AuthenticationService {
-    private static final Logger LOGGER = LogManager.getLogger(AuthenticationService.class);
     @Autowired
     private JdbcTemplate loginTemplate;
 
+    //Admin auth service
     //String username;
-    public List<Authentication> getLoginCredentials(String username) {
-        String loginQuery = "SELECT * FROM users WHERE username = ?";
+    public List<Authentication> getLoginCredentials(String username,String password) {
+        // select * from administrators where adminID='Admin1' and password='123456';
+        String loginQuery = "SELECT * FROM administrators WHERE adminID = ? and password = ?";
         return loginTemplate.query(loginQuery, (rs, rowNum) -> {
                     Authentication authentication = new Authentication();
                     authentication.setPassword(rs.getString("password"));
-                    authentication.setUsername(rs.getString("username"));
+                    authentication.setUsername(rs.getString("adminID"));
 
                     System.out.println(authentication);
-                    LOGGER.info("Returned Auth info" + authentication);
-                    LOGGER.debug("Returned Auth info" + authentication);
-                    LOGGER.error("Returned Auth info" + authentication);
                     return authentication;
 
-                }, username
+                }, username,password
         );
     }
 
-    public Map<String, Object> createUserCredentials(UserView userView) {
-       // userView.setPassword(bCryptHashing.enrcyptPassword(userView.getPassword()));
-        //String sqlQuery = "insert into users (username, password,role,lastlogin) values(?,SHA2(?,224),?,?) ";
-        String sqlQuery = "insert into users (username, password,role,lastlogin) values(?,?,?,?)";
+    //Admin auth service
+    public List<Authentication> getStudentCredentials(String username,String password) {
+        username="BSCS-ST002";
+        password="1234";
+        System.out.println("Username"+username);
+        System.out.println("Pass"+password);
+
+        String loginQuery = "SELECT * FROM students WHERE studentID = ? and password = ?";
+        return loginTemplate.query(loginQuery, (rs, rowNum) -> {
+                    Authentication authentication = new Authentication();
+                    authentication.setPassword(rs.getString("password"));
+                    authentication.setUsername(rs.getString("studentID"));
+
+                    System.out.println("=========>"+ authentication);
+                    return authentication;
+
+                }, username,password
+
+        );
+    }
+
+    public String createUserCredentials(UserView userView) {
+        String sqlQuery = "insert into administrators (adminID,firstName,lastName,password) values(?,?,?,?)";
         KeyHolder userHolder = new GeneratedKeyHolder();
-        Map<String, Object> queryResponse = null;
+        String queryResponse = null;
 
         try {
-            loginTemplate.update(new PreparedStatementCreator() {
+            int insertion = loginTemplate.update(new PreparedStatementCreator() {
                 @Override
                 public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
                     PreparedStatement ps = connection.prepareStatement(sqlQuery.toString(), Statement.RETURN_GENERATED_KEYS);
-                    //ps.setString(1,userView.getId() );
-                    ps.setString(1, userView.getUsername());
-                    ps.setString(2, userView.getPassword());
-                    ps.setString(3, userView.getRole());
-                    ps.setTimestamp(4, new Timestamp(new java.util.Date().getTime()));
+                    ps.setString(1, userView.getAdminID());
+                    ps.setString(2, userView.getFirstName());
+                    ps.setString(3, userView.getLastName());
+                    ps.setString(4, userView.getPassword());
                     return ps;
+
                 }
             }, userHolder);
-            queryResponse = userHolder.getKeys();
-        } catch (Exception e) {
+            if (insertion == 1) {
+                queryResponse = "success";
+                System.out.print("=======>" + queryResponse);
+            }
+        }
+        catch (Exception e) {
             e.printStackTrace();
             return null;
         }

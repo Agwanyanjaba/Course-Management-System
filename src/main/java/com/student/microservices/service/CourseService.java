@@ -17,44 +17,80 @@ import java.util.Map;
 @Component
 public class CourseService {
     @Autowired
-    private JdbcTemplate transactionJDBCTemplate;
-    private static final Logger LOGGER = LogManager.getLogger(CourseService.class); //log service data
+    private JdbcTemplate courseTemplate;
     //courseID,title, department, level,lastUpdated
-    public Map<String, Object> transferFunds(Courses courses) {
+
+    public String createCourse(Courses courses) {
         String sqlQuery = "INSERT INTO courses (courseID,title,department,level,lastUpdated) values(?,?,?,?,?) ";
-        KeyHolder transactionHolder = new GeneratedKeyHolder();
-        Map<String, Object> transactionResponse = null;
+        KeyHolder userHolder = new GeneratedKeyHolder();
+        String queryResponse = null;
 
         try {
-            transactionJDBCTemplate.update(new PreparedStatementCreator() {
+            int insertion = courseTemplate.update(new PreparedStatementCreator() {
                 @Override
                 public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
                     PreparedStatement ps = connection.prepareStatement(sqlQuery.toString(), Statement.RETURN_GENERATED_KEYS);
-
-                    //Set values passed from the API
                     ps.setString(1, courses.getCourseID());
                     ps.setString(2, courses.getTitle());
                     ps.setString(3, courses.getDepartment());
                     ps.setString(4, courses.getLevel());
                     ps.setTimestamp(5, new Timestamp(new java.util.Date().getTime()));
 
-
                     return ps;
+
                 }
-            }, transactionHolder);
-            transactionResponse = transactionHolder.getKeys();
-        } catch (Exception e) {
+            }, userHolder);
+            if (insertion == 1) {
+                queryResponse = "success";
+                System.out.print("=======>" + queryResponse);
+            }
+        }
+        catch (Exception e) {
             e.printStackTrace();
             return null;
         }
-        LOGGER.info(transactionResponse);
-        return transactionResponse;
+        return queryResponse;
     }
+
+    //end add course service
+
+
+
+
+//    public Map<String, Object> createCours1e(Courses courses) {
+//        String sqlQuery = "INSERT INTO courses (courseID,title,department,level,lastUpdated) values(?,?,?,?,?) ";
+//        KeyHolder transactionHolder = new GeneratedKeyHolder();
+//        Map<String, Object> transactionResponse = null;
+//
+//        try {
+//            courseTemplate.update(new PreparedStatementCreator() {
+//                @Override
+//                public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+//                    PreparedStatement ps = connection.prepareStatement(sqlQuery.toString(), Statement.RETURN_GENERATED_KEYS);
+//
+//                    //Set values passed from the API
+//                    ps.setString(1, courses.getCourseID());
+//                    ps.setString(2, courses.getTitle());
+//                    ps.setString(3, courses.getDepartment());
+//                    ps.setString(4, courses.getLevel());
+//                    ps.setTimestamp(5, new Timestamp(new java.util.Date().getTime()));
+//
+//
+//                    return ps;
+//                }
+//            }, transactionHolder);
+//            transactionResponse = transactionHolder.getKeys();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return null;
+//        }
+//        return transactionResponse;
+//    }
 
     //get all Courses
     public List<Courses> getCourses() {
         String sqlQuery = "SELECT * FROM  courses order by lastUpdated DESC";
-        return transactionJDBCTemplate.query(sqlQuery, (rs, rowNum) -> {
+        return courseTemplate.query(sqlQuery, (rs, rowNum) -> {
             Courses courses = new Courses();
             courses.setCourseID(rs.getString("courseID"));
             courses.setTitle(rs.getString("title"));
@@ -70,7 +106,7 @@ public class CourseService {
 
     public List<Courses> getCourseDetails(String courseID) {
         String accountQuery = "SELECT * FROM courses WHERE courseID = ? order by lastUpdated DESC";
-        return transactionJDBCTemplate.query(accountQuery, (rs, rowNum) -> {
+        return courseTemplate.query(accountQuery, (rs, rowNum) -> {
                     Courses userCourses = new Courses();
                     userCourses.setCourseID(rs.getString("courseID"));
                     userCourses.setTitle(rs.getString("title"));

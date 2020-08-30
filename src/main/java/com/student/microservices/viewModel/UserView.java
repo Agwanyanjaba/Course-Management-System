@@ -1,26 +1,18 @@
 package com.student.microservices.viewModel;
 
 public class UserView {
-    private String id;
-    private String username;
+
+    private String adminID;
     private String password;
-    private String role;
-    private String lastlogin;
+    private String firstName;
+    private String lastName;
 
-    public String getId() {
-        return id;
+    public String getAdminID() {
+        return adminID;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
+    public void setAdminID(String adminID) {
+        this.adminID = adminID;
     }
 
     public String getPassword() {
@@ -31,23 +23,21 @@ public class UserView {
         this.password = password;
     }
 
-    public String getRole() {
-        return role;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public String getLastlogin() {
-        return lastlogin;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setLastlogin(String lastlogin) {
-        this.lastlogin = lastlogin;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
-    public String getMessage() {
-        return password;
-    }
+
 }

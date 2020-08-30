@@ -9,11 +9,11 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.wycliffe</groupId>
-    <artifactId>smscapp</artifactId>
+    <artifactId>courseapp</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>war</packaging>
-    <name>producer</name>
-    <description>Wybosoft Bank Web Services</description>
+    <name>coursewebapplication</name>
+    <description>Course management Web Services</description>
 
     <properties>
         <java.version>1.8</java.version>

@@ -15,7 +15,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.*;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:9000")
+@CrossOrigin(origins = "http://127.0.0.1:5500")
 @RequestMapping("/v1/courses")
 
 public class CourseController {
@@ -42,39 +42,39 @@ public class CourseController {
  ;
 
     //POST course API
-    @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<HashMap<String, Object>> commitCourse(@RequestBody Courses courses) {
-        Long queryStartTime = System.currentTimeMillis();
-
-        try {
-            Map<String, Object> mapResponse = new HashMap<>();
-            mapResponse = courseService.transferFunds(courses);
-
-            Date date = new Date();
-            RestMetaData restMetaData = new RestMetaData(System.currentTimeMillis() - queryStartTime, date, "Students response");
-
-            HashMap<String, Object> response = new HashMap();
-            response.put("MetaData", restMetaData.toString());
-            response.put("Headers", "Customers API. Get all customers Data");
-            response.put("Data", mapResponse);
-
-            return new ResponseEntity<HashMap<String, Object>>(response, HttpStatus.OK);
-
-        } catch (Exception e) {
-            Date errorDate = new Date();
-            RestMetaData restMetaData = new RestMetaData(System.currentTimeMillis() - queryStartTime, errorDate, "Unexpected Error Occurred");
-            System.out.println(e.getMessage());
-            HashMap<String, Object> response = new HashMap();
-            response.put("MetaData", restMetaData);
-            response.put("Error", e.getMessage());
-            response.put("Data", null);
-            return new ResponseEntity<HashMap<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        } finally {
-            //timing goes here
-            System.out.println("Success fetching of data");
-        }
-
-    }
+//    @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+//    public ResponseEntity<HashMap<String, Object>> commitCourse(@RequestBody Courses courses) {
+//        Long queryStartTime = System.currentTimeMillis();
+//
+//        try {
+//            Map<String, Object> mapResponse = new HashMap<>();
+//            mapResponse = courseService.transferFunds(courses);
+//
+//            Date date = new Date();
+//            RestMetaData restMetaData = new RestMetaData(System.currentTimeMillis() - queryStartTime, date, "Students response");
+//
+//            HashMap<String, Object> response = new HashMap();
+//            response.put("MetaData", restMetaData.toString());
+//            response.put("Headers", "Customers API. Get all customers Data");
+//            response.put("Data", mapResponse);
+//
+//            return new ResponseEntity<HashMap<String, Object>>(response, HttpStatus.OK);
+//
+//        } catch (Exception e) {
+//            Date errorDate = new Date();
+//            RestMetaData restMetaData = new RestMetaData(System.currentTimeMillis() - queryStartTime, errorDate, "Unexpected Error Occurred");
+//            System.out.println(e.getMessage());
+//            HashMap<String, Object> response = new HashMap();
+//            response.put("MetaData", restMetaData);
+//            response.put("Error", e.getMessage());
+//            response.put("Data", null);
+//            return new ResponseEntity<HashMap<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+//        } finally {
+//            //timing goes here
+//            System.out.println("Success fetching of data");
+//        }
+//
+//    }
 
     //All transactions API
     @Autowired
@@ -133,6 +133,51 @@ public class CourseController {
             //timing goes here
             System.out.println("Success fetching of data");
         }
+    }
+
+    //Create course API definition
+    @CrossOrigin
+    @RequestMapping(value = "addcourse", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public ResponseEntity<HashMap<String, Object>> addCourse(@RequestBody Courses courses) {
+        System.out.println("Pushed to db==========>"+courses.getCourseID());
+        Long queryStartTime = System.currentTimeMillis();
+        try {
+
+            String mapResponse;
+            mapResponse = courseService.createCourse(courses);
+
+            if (mapResponse == null) {
+                System.out.println(courses.getCourseID() + " not Created");
+                Date date = new Date();
+                RestMetaData restMetaData = new RestMetaData(System.currentTimeMillis() - queryStartTime, date, "Unexpected Error occured");
+                HashMap<String, Object> loginMap = new HashMap<>();
+                loginMap.put("Metadata", restMetaData.toString());
+                loginMap.put("Data", mapResponse);
+                return new ResponseEntity<>(loginMap, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            Date date = new Date();
+            RestMetaData restMetaData = new RestMetaData(System.currentTimeMillis() - queryStartTime, date, "Processing Time");
+            HashMap<String, Object> loginMap = new HashMap<>();
+            loginMap.put("Metadata", restMetaData.toString());
+            loginMap.put("Headers", "Login Data");
+            loginMap.put("Data", mapResponse);
+
+            return new ResponseEntity<>(loginMap, HttpStatus.CREATED);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Date errorDate = new Date();
+            RestMetaData restMetaData = new RestMetaData(System.currentTimeMillis() - queryStartTime, errorDate, "Some error occured");
+            HashMap<String, Object> loginError = new HashMap<>();
+            loginError.put("MetaData", restMetaData.toString());
+            loginError.put("Data", e.getMessage());
+
+            return new ResponseEntity<>(loginError, HttpStatus.INTERNAL_SERVER_ERROR);
+
+        }
+
+
     }
 
 }

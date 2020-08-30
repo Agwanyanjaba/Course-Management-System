@@ -14,7 +14,7 @@ import org.springframework.web.servlet.config.annotation.*;
 import java.util.*;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:9000")
+@CrossOrigin(origins = "http://127.0.0.1:5500")
 @RequestMapping("/v1/modules")
 
 public class ModulesController {
@@ -39,7 +39,7 @@ public class ModulesController {
 
 
     //POST Module API
-    @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "addmodule", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<HashMap<String, Object>> commitTransaction(@RequestBody Modules modules) {
         Long queryStartTime = System.currentTimeMillis();
 
@@ -52,8 +52,9 @@ public class ModulesController {
 
             HashMap<String, Object> response = new HashMap();
             response.put("MetaData", restMetaData.toString());
-            response.put("Headers", "Modules API. Get all Modules Data");
+            response.put("Headers", "Modules API. Modules Data");
             response.put("Data", mapResponse);
+            response.put("StatusCOde", "200");
 
             //LOGGER.info(mapTransactionResponse);
 

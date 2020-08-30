@@ -18,7 +18,7 @@ public class ModulesService {
     private JdbcTemplate modulesJDBCTemplate;
 
     public Map<String, Object> postModule(Modules modules) {
-        String sqlQuery = "INSERT INTO modules (cid,transaction_date,amount) values(?,?,?) ";
+        String sqlQuery = "INSERT INTO modules (moduleID,moduleName,courseID,lastUpdated) values(?,?,?,?) ";
         KeyHolder modulesHolder = new GeneratedKeyHolder();
         Map<String, Object> moduleResponse = null;
 
@@ -30,8 +30,9 @@ public class ModulesService {
 
                     //Set values passed from the API
                     ps.setString(1, modules.getModuleID());
-                    ps.setTimestamp(2, new Timestamp(new java.util.Date().getTime()));
+                    ps.setString(2, modules.getModuleName());
                     ps.setString(3,modules.getCourseID());
+                    ps.setTimestamp(4, new Timestamp(new java.util.Date().getTime()));
 
                     return ps;
                 }
